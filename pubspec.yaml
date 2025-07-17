@@ -33,11 +33,12 @@ dependencies:
   flutter_riverpod: ^2.4.0
   hive: ^2.2.3
   hive_flutter: ^1.1.0
-  android_alarm_manager_plus: ^3.0.4
+  android_alarm_manager_plus: ^4.0.7
   camera: ^0.10.5+5
   path_provider: ^2.1.1
   shared_preferences: ^2.2.2
   intl: ^0.18.1
+  fluttertoast: ^8.2.4
   # For pattern lock UI
   pattern_lock: ^2.0.0
   # For flames/scary faces UI (using Lottie for animations)

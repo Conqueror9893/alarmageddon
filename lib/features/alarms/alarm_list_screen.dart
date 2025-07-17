@@ -35,17 +35,37 @@ class AlarmListScreen extends StatelessWidget {
                   '${alarm.time.hour.toString().padLeft(2, '0')}:${alarm.time.minute.toString().padLeft(2, '0')} - ${_recurrenceString(alarm.recurrence)}',
                   style: const TextStyle(color: Colors.white70),
                 ),
-                trailing: Switch(
-                  value: alarm.enabled,
-                  onChanged: (val) {
-                    alarm.enabled = val;
-                    AlarmStorage.update(alarm);
+                trailing: PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert, color: Colors.white),
+                  onSelected: (value) async {
+                    if (value == 'edit') {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => AlarmEditScreen(alarm: alarm),
+                        ),
+                      );
+                    } else if (value == 'delete') {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (_) => AlertDialog(
+                          title: const Text('Delete Alarm'),
+                          content: const Text('Are you sure you want to delete this alarm?'),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+                            TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete')),
+                          ],
+                        ),
+                      );
+                      if (confirm == true) {
+                        await AlarmStorage.delete(alarm.id);
+                      }
+                    }
                   },
-                  activeColor: Colors.red,
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                    const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                  ],
                 ),
-                onLongPress: () async {
-                  await AlarmStorage.delete(alarm.id);
-                },
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(

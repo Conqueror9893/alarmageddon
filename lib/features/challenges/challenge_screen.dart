@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'math_challenge.dart';
+import '../alarms/alarm_storage.dart';
 
 class ChallengeScreen extends StatelessWidget {
   const ChallengeScreen({Key? key}) : super(key: key);
@@ -7,7 +9,14 @@ class ChallengeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Wake Up Challenge')),
-      body: const Center(child: Text('Challenges will appear here!')),
+      body: Center(
+        child: MathChallenge(
+          onSolved: () {
+            AlarmStorage.stopAlarmSound();
+            Navigator.of(context).pop();
+          },
+        ),
+      ),
     );
   }
 }

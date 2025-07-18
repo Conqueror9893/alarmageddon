@@ -5,6 +5,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'features/alarms/alarm_storage.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
@@ -23,6 +25,7 @@ class AlarmageddonApp extends StatelessWidget {
       theme: AppTheme.hellTheme,
       home: const AlarmListScreen(),
       debugShowCheckedModeBanner: false,
+      navigatorKey: navigatorKey,
     );
   }
 }

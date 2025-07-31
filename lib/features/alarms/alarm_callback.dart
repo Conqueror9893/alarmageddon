@@ -1,70 +1,48 @@
-// // // alarm_callback.dart
-// // import 'dart:isolate';
-// // import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
-// // import 'package:flutter/material.dart';
-// // import 'package:audioplayers/audioplayers.dart';
-// // import '../challenges/challenge_screen.dart'; // Import your challenge screen
-// // import '../../main.dart'; // For access to navigatorKey
-
-// // final AudioPlayer _audioPlayer = AudioPlayer();
-
-// // Future<void> alarmCallback() async {
-// //   print('🔔 Alarm triggered!');
-// //   _audioPlayer.play(
-// //     AssetSource('assets/Die_For_You.mp3'),
-// //   ); // Replace with actual file
-
-// //   // Use navigatorKey to push challenge screen
-// //   navigatorKey.currentState?.push(
-// //     MaterialPageRoute(
-// //       builder: (context) => ChallengeScreen(
-// //         onSolved: () async {
-// //           await _audioPlayer.stop();
-// //           navigatorKey.currentState?.pop(); // Dismiss the challenge screen
-// //         },
-// //       ),
-// //     ),
-// //   );
-// // }
-
-
-// // alarm_callback.dart
-// import 'dart:isolate';
-// import 'dart:ui';
-// import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
-// import 'package:audioplayers/audioplayers.dart';
-// import 'package:hive_flutter/hive_flutter.dart';
-// import 'package:flutter/foundation.dart';
-
-// final AudioPlayer _audioPlayer = AudioPlayer();
-
-// // Background callback
-// Future<void> alarmCallback() async {
-//   print('🔔 Alarm triggered in background isolate!');
-
-//   // Playing alarm sound
-//   await _audioPlayer.play(
-//     AssetSource('assets/Die_For_You.mp3'),
-//   );
-
-//   // You cannot push a screen from here.
-//   // Instead, send a message to the main isolate.
-//   final port = IsolateNameServer.lookupPortByName('alarm_port');
-//   port?.send('trigger_challenge');
-// }
-
-
 import 'dart:isolate';
-import 'package:flutter/services.dart';
 import 'dart:ui';
 
-void alarmCallback() {
-  final SendPort? sendPort = IsolateNameServer.lookupPortByName('alarm_port');
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+// This is the entrypoint for the alarm isolate.
+@pragma('vm:entry-point')
+void alarmCallback() async {
+  // Initialize plugins.
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  // Initialize the plugin for the background isolate
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+  const InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+  );
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+  const AndroidNotificationDetails androidPlatformChannelSpecifics =
+      AndroidNotificationDetails(
+    'alarm_channel_id',
+    'alarm_channel_name',
+    channelDescription: 'alarm_channel_description',
+    importance: Importance.max,
+    priority: Priority.high,
+    showWhen: false,
+    fullScreenIntent: true,
+  );
+
+  const NotificationDetails platformChannelSpecifics =
+      NotificationDetails(android: androidPlatformChannelSpecifics);
+
+  // Show a notification
+  await flutterLocalNotificationsPlugin.show(
+    0,
+    'Alarm',
+    'Your alarm is ringing!',
+    platformChannelSpecifics,
+  );
+
+  // Get the SendPort to communicate with the main isolate.
+  final SendPort? sendPort = IsolateNameServer.lookupPortByName('alarm_port');
   if (sendPort != null) {
     sendPort.send('trigger_challenge');
   }
-
-  // Play sound using platform channel or use isolate-safe sound package
-  // You CANNOT use audioplayers directly here, instead trigger sound from main isolate via message
 }

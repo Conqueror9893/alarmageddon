@@ -1,43 +1,19 @@
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:timezone/timezone.dart' as tz;
-import 'package:audioplayers/audioplayers.dart';
-import '../../main.dart';
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:alarmageddon/features/alarms/alarm_callback.dart';
 
 class AlarmScheduler {
-  static final AudioPlayer _audioPlayer = AudioPlayer();
-
-  static Future<void> scheduleAlarm(DateTime dateTime) async {
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'alarm_channel',
-      'Alarm Notifications',
-      channelDescription: 'Triggers alarm & challenge',
-      importance: Importance.max,
-      priority: Priority.high,
-      sound: RawResourceAndroidNotificationSound('alarm'),
-      playSound: true,
-      fullScreenIntent: true,
-      visibility: NotificationVisibility.public,
-    );
-
-    const NotificationDetails notifDetails = NotificationDetails(android: androidDetails);
-
-    await notificationsPlugin.zonedSchedule(
-      0,
-      'Wake up!',
-      'Solve the challenge to dismiss the alarm.',
-      tz.TZDateTime.from(dateTime, tz.local),
-      notifDetails,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-      payload: 'trigger_challenge',
+  static Future<void> scheduleAlarm(DateTime scheduledTime, int alarmId) async {
+    await AndroidAlarmManager.oneShotAt(
+      scheduledTime,
+      alarmId,
+      alarmCallback,
+      exact: true,
+      wakeup: true,
+      alarmClock: true,
     );
   }
 
-  static Future<void> playAlarmSound() async {
-    await _audioPlayer.play(AssetSource('alarm.mp3'), volume: 1.0);
-  }
-
-  static Future<void> stopAlarmSound() async {
-    await _audioPlayer.stop();
+  static Future<void> cancelAlarm(int alarmId) async {
+    await AndroidAlarmManager.cancel(alarmId);
   }
 }

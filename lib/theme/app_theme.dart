@@ -9,7 +9,6 @@ class AppTheme {
       colorScheme: ColorScheme.dark(
         primary: Colors.red[900]!,
         secondary: Colors.deepOrangeAccent,
-        background: Colors.black,
         surface: Colors.grey[900]!,
         error: Colors.redAccent,
       ),

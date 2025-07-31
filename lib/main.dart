@@ -16,7 +16,7 @@ void main() async {
 }
 
 class AlarmageddonApp extends StatelessWidget {
-  const AlarmageddonApp({Key? key}) : super(key: key);
+  const AlarmageddonApp({super.key});
 
   @override
   Widget build(BuildContext context) {

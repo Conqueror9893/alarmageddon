@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class MathChallenge extends StatefulWidget {
   final VoidCallback onSolved;
-  const MathChallenge({Key? key, required this.onSolved}) : super(key: key);
+  const MathChallenge({super.key, required this.onSolved});
 
   @override
   State<MathChallenge> createState() => _MathChallengeState();

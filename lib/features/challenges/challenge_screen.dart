@@ -3,7 +3,7 @@ import 'math_challenge.dart';
 import '../alarms/alarm_storage.dart';
 
 class ChallengeScreen extends StatelessWidget {
-  const ChallengeScreen({Key? key}) : super(key: key);
+  const ChallengeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

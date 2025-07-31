@@ -3,7 +3,7 @@ import 'alarm_model.dart';
 import 'alarm_storage.dart';
 
 class AlarmTestButton extends StatelessWidget {
-  const AlarmTestButton({Key? key}) : super(key: key);
+  const AlarmTestButton({super.key});
 
   @override
   Widget build(BuildContext context) {

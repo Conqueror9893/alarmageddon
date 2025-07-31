@@ -151,7 +151,7 @@ import 'package:fluttertoast/fluttertoast.dart'; // 👈 Add this
 
 class AlarmEditScreen extends StatefulWidget {
   final Alarm? alarm;
-  const AlarmEditScreen({Key? key, this.alarm}) : super(key: key);
+  const AlarmEditScreen({super.key, this.alarm});
 
   @override
   State<AlarmEditScreen> createState() => _AlarmEditScreenState();

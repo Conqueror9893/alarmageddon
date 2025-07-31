@@ -6,7 +6,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'alarm_test_button.dart';
 
 class AlarmListScreen extends StatelessWidget {
-  const AlarmListScreen({Key? key}) : super(key: key);
+  const AlarmListScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

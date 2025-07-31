@@ -4,6 +4,8 @@ import 'alarm_edit_screen.dart';
 import 'alarm_model.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'alarm_test_button.dart';
+import 'alarm_callback.dart';
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 
 class AlarmListScreen extends StatelessWidget {
   const AlarmListScreen({super.key});
@@ -11,9 +13,22 @@ class AlarmListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Alarms')),
+      appBar: AppBar(title: const Text('Alarmageddon')),
       body: Column(
         children: [
+          ElevatedButton(
+            onPressed: () {
+              AndroidAlarmManager.oneShot(
+                const Duration(seconds: 5),
+                1, // Use unique ID
+                alarmCallback,
+                exact: true,
+                wakeup: true,
+                rescheduleOnReboot: true,
+              );
+            },
+            child: Text("Test Alarm"),
+          ),
           const Padding(padding: EdgeInsets.all(8.0), child: AlarmTestButton()),
           Expanded(
             child: ValueListenableBuilder(

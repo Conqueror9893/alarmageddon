@@ -4,7 +4,8 @@ import 'alarm_storage.dart';
 
 class AlarmTestButton extends StatelessWidget {
   const AlarmTestButton({super.key});
-
+  // This button is for testing purposes to set an alarm quickly
+  // It sets an alarm for 1 minute from now with a test label
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(

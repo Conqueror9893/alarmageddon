@@ -9,6 +9,7 @@ import 'package:audioplayers/audioplayers.dart';
 class AlarmStorage {
   static const String boxName = 'alarms';
   static final AudioPlayer _player = AudioPlayer();
+  static bool shouldShowChallengeScreen = false;
 
   static Future<void> init() async {
     Hive.registerAdapter(AlarmAdapter());
@@ -34,6 +35,7 @@ class AlarmStorage {
 
   static Future<void> scheduleAlarm(Alarm alarm) async {
     if (!alarm.enabled) return;
+
     final now = DateTime.now();
     DateTime nextTime = DateTime(
       now.year,
@@ -42,13 +44,12 @@ class AlarmStorage {
       alarm.time.hour,
       alarm.time.minute,
     );
+
     if (alarm.recurrence.isEmpty) {
-      // One-time alarm
       if (nextTime.isBefore(now)) {
         nextTime = nextTime.add(const Duration(days: 1));
       }
     } else {
-      // Recurring alarm: find next occurrence
       int daysToAdd = 0;
       while (!alarm.recurrence.contains((nextTime.weekday % 7))) {
         nextTime = nextTime.add(const Duration(days: 1));
@@ -59,7 +60,9 @@ class AlarmStorage {
         nextTime = nextTime.add(const Duration(days: 7));
       }
     }
+
     final duration = nextTime.difference(now);
+
     await AndroidAlarmManager.oneShot(
       duration,
       alarm.id,
@@ -74,18 +77,33 @@ class AlarmStorage {
     await AndroidAlarmManager.cancel(id);
   }
 
-  // This will be called when the alarm fires
+  /// Background isolate callback — cannot touch UI here.
   static Future<void> alarmCallback() async {
-    // Play alarm sound in loop
+    WidgetsFlutterBinding.ensureInitialized();
+
     await _player.setReleaseMode(ReleaseMode.loop);
-    await _player.play(AssetSource('alarm.mp3'));
-    navigatorKey.currentState?.push(
-      MaterialPageRoute(builder: (_) => const ChallengeScreen()),
-    );
-    print('Alarm fired!');
+    await _player.play(AssetSource('assets/alarm.mp3'));
+
+    shouldShowChallengeScreen = true;
+    print('🔔 Alarm triggered (background isolate)');
   }
 
   static Future<void> stopAlarmSound() async {
     await _player.stop();
+  }
+
+  /// This should be called in your main/resume logic to show challenge screen
+  static void maybeShowChallengeScreen(BuildContext context) {
+    if (shouldShowChallengeScreen) {
+      shouldShowChallengeScreen = false;
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => ChallengeScreen(
+          onSolved: () async {
+            await stopAlarmSound();
+            Navigator.of(context).pop();
+          },
+        ),
+      ));
+    }
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'math_challenge.dart';
 import 'color_sequence_challenge.dart';
+import 'speak_sentence_challenge.dart';
 import 'dart:math';
 
 class ChallengeScreen extends StatelessWidget {
@@ -18,6 +19,7 @@ class ChallengeScreen extends StatelessWidget {
     final List<Widget Function()> challengeBuilders = [
       () => MathChallenge(onSolved: () => _handleSolved(context)),
       () => ColorSequenceChallenge(onSolved: () => _handleSolved(context)),
+      () => SpeakSentenceChallenge(onSolved: () => _handleSolved(context)),
     ];
 
     final random = Random();

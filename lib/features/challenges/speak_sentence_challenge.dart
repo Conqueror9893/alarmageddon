@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:flutter/services.dart';
 
 class SpeakSentenceChallenge extends StatefulWidget {
   final VoidCallback onSolved;
@@ -11,12 +11,10 @@ class SpeakSentenceChallenge extends StatefulWidget {
 }
 
 class _SpeakSentenceChallengeState extends State<SpeakSentenceChallenge> {
-  final stt.SpeechToText _speech = stt.SpeechToText();
-  bool _isListening = false;
+  static const _speechChannel = MethodChannel('alarmageddon/speech');
   String _recognizedText = '';
   String _germanSentence = '';
   String _englishSentence = '';
-
   final Map<String, String> _sentences = {
     'Guten Morgen': 'Good morning',
     'Wie geht es Ihnen': 'How are you',
@@ -28,11 +26,6 @@ class _SpeakSentenceChallengeState extends State<SpeakSentenceChallenge> {
   void initState() {
     super.initState();
     _selectRandomSentence();
-    _initSpeech();
-  }
-
-  void _initSpeech() async {
-    await _speech.initialize();
   }
 
   void _selectRandomSentence() {
@@ -41,30 +34,27 @@ class _SpeakSentenceChallengeState extends State<SpeakSentenceChallenge> {
     setState(() {
       _germanSentence = _sentences.keys.elementAt(index);
       _englishSentence = _sentences.values.elementAt(index);
+      _recognizedText = '';
     });
   }
 
-  void _startListening() async {
-    if (!_isListening) {
-      bool available = await _speech.initialize();
-      if (available) {
-        setState(() => _isListening = true);
-        _speech.listen(
-          onResult: (val) => setState(() {
-            _recognizedText = val.recognizedWords;
-            if (_recognizedText.toLowerCase() == _germanSentence.toLowerCase()) {
-              widget.onSolved();
-            }
-          }),
-        );
+  Future<void> _startListening() async {
+    try {
+      final result = await _speechChannel.invokeMethod<String>(
+        'startListening',
+        {'prompt': 'Speak: $_germanSentence'},
+      );
+      if (result != null) {
+        setState(() {
+          _recognizedText = result;
+        });
+        if (_recognizedText.toLowerCase().trim() ==
+            _germanSentence.toLowerCase().trim()) {
+          widget.onSolved();
+        }
       }
-    }
-  }
-
-  void _stopListening() async {
-    if (_isListening) {
-      setState(() => _isListening = false);
-      _speech.stop();
+    } on PlatformException catch (e) {
+      debugPrint('Speech error: $e');
     }
   }
 
@@ -95,14 +85,19 @@ class _SpeakSentenceChallengeState extends State<SpeakSentenceChallenge> {
             ),
             const SizedBox(height: 24),
             FloatingActionButton(
-              onPressed: _isListening ? _stopListening : _startListening,
-              child: Icon(_isListening ? Icons.mic_off : Icons.mic),
+              onPressed: _startListening,
+              child: const Icon(Icons.mic),
             ),
             const SizedBox(height: 16),
             Text(
               _recognizedText,
               style: const TextStyle(fontSize: 18, color: Colors.white),
             ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: _selectRandomSentence,
+              child: const Text('New Sentence'),
+            )
           ],
         ),
       ),

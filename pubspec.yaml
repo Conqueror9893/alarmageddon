@@ -43,6 +43,8 @@ dependencies:
   fluttertoast: ^8.2.4
   # For pattern lock UI
   pattern_lock: ^2.0.0
+  google_fonts: ^6.2.1
+  font_awesome_flutter: ^10.7.0
   # For flames/scary faces UI (using Lottie for animations)
   lottie: ^2.6.0
   permission_handler: ^11.0.1

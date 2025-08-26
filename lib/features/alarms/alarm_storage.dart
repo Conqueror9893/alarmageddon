@@ -82,7 +82,7 @@ class AlarmStorage {
     WidgetsFlutterBinding.ensureInitialized();
 
     await _player.setReleaseMode(ReleaseMode.loop);
-    await _player.play(AssetSource('assets/alarm.mp3'));
+    await _player.play(AssetSource('Die_For_You.mp3')); // no "assets/" prefix
 
     shouldShowChallengeScreen = true;
     print('🔔 Alarm triggered (background isolate)');

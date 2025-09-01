@@ -2,14 +2,15 @@ import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:alarmageddon/features/alarms/alarm_callback.dart';
 
 class AlarmScheduler {
-  static Future<void> scheduleAlarm(DateTime scheduledTime, int alarmId) async {
+  static Future<void> scheduleAlarm(DateTime scheduledDateTime, int alarmId) async {
     await AndroidAlarmManager.oneShotAt(
-      scheduledTime,
+      scheduledDateTime,
       alarmId,
       alarmCallback,
       exact: true,
       wakeup: true,
       alarmClock: true,
+      rescheduleOnReboot: true,
     );
   }
 

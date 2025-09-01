@@ -3,7 +3,6 @@ import 'alarm_model.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter/material.dart';
 import '../challenges/challenge_screen.dart';
-import '../../main.dart';
 import 'package:audioplayers/audioplayers.dart';
 
 class AlarmStorage {
@@ -61,10 +60,10 @@ class AlarmStorage {
       }
     }
 
-    final duration = nextTime.difference(now);
+    print('Scheduling alarm at: $nextTime with id ${alarm.id}'); // Debug print
 
-    await AndroidAlarmManager.oneShot(
-      duration,
+    await AndroidAlarmManager.oneShotAt(
+      nextTime,
       alarm.id,
       alarmCallback,
       exact: true,
@@ -96,14 +95,16 @@ class AlarmStorage {
   static void maybeShowChallengeScreen(BuildContext context) {
     if (shouldShowChallengeScreen) {
       shouldShowChallengeScreen = false;
-      Navigator.of(context).push(MaterialPageRoute(
-        builder: (_) => ChallengeScreen(
-          onSolved: () async {
-            await stopAlarmSound();
-            Navigator.of(context).pop();
-          },
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => ChallengeScreen(
+            onSolved: () async {
+              await stopAlarmSound();
+              Navigator.of(context).pop();
+            },
+          ),
         ),
-      ));
+      );
     }
   }
 }

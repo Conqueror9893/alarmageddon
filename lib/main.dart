@@ -102,7 +102,6 @@ import 'dart:isolate';
 import 'dart:ui';
 import 'dart:io' show Platform;
 
-import 'package:alarmageddon/features/alarms/alarm_callback.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -112,10 +111,10 @@ import 'package:alarmageddon/features/challenges/math_challenge.dart';
 import 'package:alarmageddon/features/challenges/color_sequence_challenge.dart';
 import 'package:alarmageddon/features/challenges/speak_sentence_challenge.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
-import 'features/alarms/alarm_list_screen.dart';
 import 'features/alarms/alarm_storage.dart';
 import 'features/challenges/challenge_screen.dart';
 import 'theme/app_theme.dart';
+import 'package:alarmageddon/features/alarms/alarm_splash_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -188,7 +187,7 @@ class AlarmageddonApp extends StatelessWidget {
       title: 'Alarmageddon',
       theme: AppTheme.hellTheme,
       debugShowCheckedModeBanner: false,
-      home: const AlarmListScreen(),
+      home: const SplashScreen(),
       navigatorKey: navigatorKey,
       routes: {
         '/mathematical_torment': (context) => MathChallenge(

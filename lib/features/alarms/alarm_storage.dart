@@ -1,9 +1,14 @@
 import 'package:hive/hive.dart';
+import 'package:logging/logging.dart';
 import 'alarm_model.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter/material.dart';
 import '../challenges/challenge_screen.dart';
 import 'package:audioplayers/audioplayers.dart';
+import '../../utils/logger.dart';
+
+final logger = Logger('AlarmStorage');
+
 
 class AlarmStorage {
   static const String boxName = 'alarms';
@@ -81,9 +86,10 @@ class AlarmStorage {
     WidgetsFlutterBinding.ensureInitialized();
 
     await _player.setReleaseMode(ReleaseMode.loop);
-    await _player.play(AssetSource('Die_For_You.mp3')); // no "assets/" prefix
+    await _player.play(AssetSource('Die_For_You.mp3')); 
 
     shouldShowChallengeScreen = true;
+    logger.info('Alarm triggered, should show challenge screen set to true.');
     print('🔔 Alarm triggered (background isolate)');
   }
 

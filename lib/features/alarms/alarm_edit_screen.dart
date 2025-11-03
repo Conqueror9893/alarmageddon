@@ -290,7 +290,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
                 Switch(
                   value: _enabled,
                   onChanged: (val) => setState(() => _enabled = val),
-                  activeColor: Colors.red,
+                  activeThumbColor: Colors.red,
                 ),
                 const Spacer(),
                 ElevatedButton(

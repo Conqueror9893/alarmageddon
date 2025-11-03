@@ -498,25 +498,56 @@ class _ChallengeCardButton extends StatelessWidget {
 }
 
 // --------- Alarm ListTile ---------
-class _AlarmTile extends StatelessWidget {
+class _AlarmTile extends StatefulWidget {
   final Alarm alarm;
   const _AlarmTile({required this.alarm});
 
-  void _playSound(BuildContext context) async {
-    final player = AudioPlayer();
+  @override
+  State<_AlarmTile> createState() => _AlarmTileState();
+}
 
-    await player.play(AssetSource('Die_For_You.mp3'));
+class _AlarmTileState extends State<_AlarmTile> {
+  final AudioPlayer _player = AudioPlayer();
+  bool _isPlaying = false;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Playing alarm sound..."),
-        backgroundColor: Colors.redAccent,
-      ),
-    );
+  @override
+  void initState() {
+    super.initState();
+    _player.onPlayerStateChanged.listen((state) {
+      if (mounted) {
+        setState(() {
+          _isPlaying = state == PlayerState.playing;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _player.dispose();
+    super.dispose();
+  }
+
+  void _toggleSound(BuildContext context) async {
+    if (_isPlaying) {
+      await _player.stop();
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    } else {
+      await _player.play(AssetSource('Die_For_You.mp3'));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Playing alarm sound..."),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
   }
 
   void _delete(BuildContext context) async {
-    await AlarmStorage.delete(alarm.id);
+    if (widget.alarm.key != null) {
+      await AlarmStorage.delete(widget.alarm.key);
+      await AlarmStorage.cancelAlarm(widget.alarm.id);
+    }
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -544,11 +575,11 @@ class _AlarmTile extends StatelessWidget {
       child: ListTile(
         minLeadingWidth: 20,
         leading: Icon(
-          alarm.enabled ? Icons.alarm_on : Icons.alarm_off,
-          color: alarm.enabled ? Colors.redAccent : Colors.grey.shade700,
+          widget.alarm.enabled ? Icons.alarm_on : Icons.alarm_off,
+          color: widget.alarm.enabled ? Colors.redAccent : Colors.grey.shade700,
         ),
         title: Text(
-          alarm.label.isNotEmpty ? alarm.label : 'Alarm',
+          widget.alarm.label.isNotEmpty ? widget.alarm.label : 'Alarm',
           style: GoogleFonts.orbitron(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -559,24 +590,26 @@ class _AlarmTile extends StatelessWidget {
         subtitle: Row(
           children: [
             Text(
-              '${alarm.time.hour.toString().padLeft(2, '0')}:${alarm.time.minute.toString().padLeft(2, '0')} ',
+              '${widget.alarm.time.hour.toString().padLeft(2, '0')}:${widget.alarm.time.minute.toString().padLeft(2, '0')} ',
               style: GoogleFonts.robotoMono(
                 color: Colors.redAccent.shade100,
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            ..._buildDaysPills(alarm.recurrence),
+            ..._buildDaysPills(widget.alarm.recurrence),
           ],
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
-
           children: [
             // Play sound button
             IconButton(
-              icon: const Icon(Icons.volume_up, color: Colors.redAccent),
-              onPressed: () => _playSound(context),
+              icon: Icon(
+                _isPlaying ? Icons.volume_off : Icons.volume_up,
+                color: Colors.redAccent,
+              ),
+              onPressed: () => _toggleSound(context),
               tooltip: "Hear Alarm Sound",
             ),
 
@@ -588,10 +621,10 @@ class _AlarmTile extends StatelessWidget {
             ),
             // Enable/disable switch as before
             Switch(
-              value: alarm.enabled,
+              value: widget.alarm.enabled,
               onChanged: (val) {
-                alarm.enabled = val;
-                AlarmStorage.update(alarm);
+                widget.alarm.enabled = val;
+                AlarmStorage.update(widget.alarm);
               },
               activeThumbColor: Colors.redAccent,
             ),
@@ -599,7 +632,8 @@ class _AlarmTile extends StatelessWidget {
         ),
         onTap: () {
           Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => AlarmEditScreen(alarm: alarm)),
+            MaterialPageRoute(
+                builder: (_) => AlarmEditScreen(alarm: widget.alarm)),
           );
         },
       ),

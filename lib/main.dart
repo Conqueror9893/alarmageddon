@@ -13,6 +13,8 @@ import 'package:alarmageddon/features/challenges/speak_sentence_challenge.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'features/alarms/alarm_list_screen.dart';
 import 'features/alarms/alarm_storage.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+import 'features/alarms/alarm_lock.dart';
 import 'features/challenges/challenge_screen.dart';
 import 'theme/app_theme.dart';
 import 'package:alarmageddon/features/alarms/alarm_splash_screen.dart';
@@ -26,6 +28,7 @@ Future<void> main() async {
 
   await Hive.initFlutter();
   await AlarmStorage.init();
+  await AlarmLockService.init();
 
   // Initialize alarm manager only on Android
   if (Platform.isAndroid) {
@@ -47,11 +50,15 @@ Future<void> main() async {
       await player.setReleaseMode(ReleaseMode.loop);
       await player.play(AssetSource('Die_For_You.mp3'), volume: 1.0);
 
+      // Start lock foreground service
+      await AlarmLockService.startLock();
+
       navigatorKey.currentState?.push(
         MaterialPageRoute(
           builder: (context) => ChallengeScreen(
             onSolved: () async {
               await player.stop();
+              await AlarmLockService.stopLock(); // stop lock service
               if (navigatorKey.currentState!.canPop()) {
                 navigatorKey.currentState!.pop();
               }
@@ -97,12 +104,12 @@ class AlarmageddonApp extends StatelessWidget {
             Navigator.of(context).pop();
           },
         ),
-        '/memory_of_the_damned': (context) =>  ColorSequenceChallenge(
+        '/memory_of_the_damned': (context) => ColorSequenceChallenge(
           onSolved: () {
             Navigator.of(context).pop();
           },
         ),
-        '/the_cursed_utterance': (context) =>  SpeakSentenceChallenge(
+        '/the_cursed_utterance': (context) => SpeakSentenceChallenge(
           onSolved: () {
             Navigator.of(context).pop();
           },

@@ -9,6 +9,7 @@ import 'alarm_storage.dart';
 import 'alarm_edit_screen.dart';
 import 'alarm_model.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AlarmListScreen extends StatefulWidget {
   const AlarmListScreen({super.key});
@@ -19,6 +20,27 @@ class AlarmListScreen extends StatefulWidget {
 
 class _AlarmListScreenState extends State<AlarmListScreen> {
   ThemeMode _themeMode = ThemeMode.dark;
+
+  int _challengeCount = 2; // default
+
+  @override
+  void initState() {
+    super.initState();
+    _loadChallengeCount();
+  }
+
+  Future<void> _loadChallengeCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _challengeCount = prefs.getInt('challengeCount') ?? 2;
+    });
+  }
+
+  Future<void> _saveChallengeCount(int value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('challengeCount', value);
+    setState(() => _challengeCount = value);
+  }
 
   void _openSettings() {
     showModalBottomSheet(
@@ -68,6 +90,32 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Number of Challenges",
+                  style: TextStyle(color: Colors.white),
+                ),
+                DropdownButton<int>(
+                  value: _challengeCount,
+                  dropdownColor: const Color(0xFF3C1432),
+                  items: List.generate(
+                    5,
+                    (i) =>
+                        DropdownMenuItem(value: i + 1, child: Text("${i + 1}")),
+                  ),
+                  style: const TextStyle(color: Colors.white),
+                  onChanged: (value) {
+                    if (value != null) {
+                      _saveChallengeCount(value);
+                    }
+                  },
+                ),
+              ],
+            ),
+
             const SizedBox(height: 20),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
@@ -337,79 +385,100 @@ class _AlarmListScreenState extends State<AlarmListScreen> {
                       ).listenable(),
                       builder: (context, Box<Alarm> box, _) {
                         final alarms = box.values.toList();
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
+
+                        return LayoutBuilder(
+                          builder: (context, constraints) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  'ALARMS ',
-                                  style: GoogleFonts.orbitron(
-                                    fontSize: 15,
-                                    color: Colors.redAccent,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 1,
-                                  ),
-                                ),
-                                Text(
-                                  '(${alarms.length} active)',
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                const Spacer(),
-                                ElevatedButton.icon(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.redAccent,
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 8,
-                                      horizontal: 9,
-                                    ),
-                                  ),
-                                  onPressed: () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (_) => const AlarmEditScreen(),
+                                Row(
+                                  children: [
+                                    Text(
+                                      'ALARMS ',
+                                      style: GoogleFonts.orbitron(
+                                        fontSize: constraints.maxWidth < 400
+                                            ? 14
+                                            : 16,
+                                        color: Colors.redAccent,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 1,
                                       ),
-                                    );
-                                  },
-                                  icon: const Icon(Icons.add_alarm, size: 18),
-                                  label: const Text(
-                                    "ADD ALARM",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
                                     ),
-                                  ),
+                                    Text(
+                                      '(${alarms.length} active)',
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    ElevatedButton.icon(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.redAccent,
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 8,
+                                          horizontal: 9,
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                const AlarmEditScreen(),
+                                          ),
+                                        );
+                                      },
+                                      icon: const Icon(
+                                        Icons.add_alarm,
+                                        size: 18,
+                                      ),
+                                      label: const Text(
+                                        "ADD ALARM",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                            const Divider(
-                              color: Colors.redAccent,
-                              height: 16,
-                              thickness: 1.2,
-                            ),
-                            Expanded(
-                              child: alarms.isEmpty
-                                  ? Center(
+                                const Divider(
+                                  color: Colors.redAccent,
+                                  height: 16,
+                                  thickness: 1.2,
+                                ),
+                                if (alarms.isEmpty)
+                                  const Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 20,
+                                      ),
                                       child: Text(
                                         'No alarms yet!',
                                         style: TextStyle(color: Colors.white60),
                                       ),
-                                    )
-                                  : ListView.builder(
+                                    ),
+                                  )
+                                else
+                                  Flexible(
+                                    child: ListView.builder(
                                       itemCount: alarms.length,
+                                      shrinkWrap: true,
+                                      physics:
+                                          const AlwaysScrollableScrollPhysics(),
                                       itemBuilder: (context, index) {
-                                        final alarm = alarms[index];
-                                        return _AlarmTile(alarm: alarm);
+                                        return _AlarmTile(alarm: alarms[index]);
                                       },
                                     ),
-                            ),
-                          ],
+                                  ),
+                              ],
+                            );
+                          },
                         );
                       },
                     ),
@@ -633,7 +702,8 @@ class _AlarmTileState extends State<_AlarmTile> {
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-                builder: (_) => AlarmEditScreen(alarm: widget.alarm)),
+              builder: (_) => AlarmEditScreen(alarm: widget.alarm),
+            ),
           );
         },
       ),
@@ -644,35 +714,47 @@ class _AlarmTileState extends State<_AlarmTile> {
     if (recurrence.isEmpty) {
       return [
         Container(
-          margin: const EdgeInsets.only(left: 6),
-          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+          margin: const EdgeInsets.only(left: 6, top: 4, bottom: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
             color: Colors.red.shade900,
-            borderRadius: BorderRadius.circular(7),
+            borderRadius: BorderRadius.circular(8),
           ),
           child: const Text(
             'Once',
-            style: TextStyle(color: Colors.white, fontSize: 9),
+            style: TextStyle(color: Colors.white, fontSize: 11),
           ),
         ),
       ];
     }
+
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    return recurrence
-        .map(
-          (i) => Container(
-            margin: const EdgeInsets.only(left: 5),
-            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-            decoration: BoxDecoration(
-              color: Colors.red.shade800,
-              borderRadius: BorderRadius.circular(7),
-            ),
-            child: Text(
-              days[i % 7],
-              style: const TextStyle(color: Colors.white, fontSize: 10),
-            ),
-          ),
-        )
-        .toList();
+
+    return [
+      const SizedBox(width: 4),
+      Flexible(
+        child: Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: recurrence.map((i) {
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.red.shade800,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                days[i % 7],
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    ];
   }
 }

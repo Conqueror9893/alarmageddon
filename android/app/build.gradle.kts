@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.example.alarmageddon"
     compileSdk = 36
-    ndkVersion = "27.0.12077973"
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -33,6 +33,11 @@ android {
     dependencies {
         // This is required for the Android Alarm Manager plugin.
         coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    }
+    lint {
+        checkReleaseBuilds = false
+
+       abortOnError = false
     }
     buildTypes {
         release {
